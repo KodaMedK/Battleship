@@ -126,3 +126,228 @@ for (int i = 0; i < 5; i++)
         }
     }
 }
+
+for (;;)
+{
+    for (;;)
+    {
+        Console.WriteLine(" #==========#   #==========#");
+
+        for (int row = 0; row < 10; row++)
+        {
+            Console.Write(row + "|");
+
+            for (int col = 0; col < 10; col++)
+            {
+                if (playerGrid[row, col] == 0)
+                {
+                    if (random.Next(5) > 0)
+                    {
+                        Console.Write(" ");
+                    }
+                    else
+                    {
+                        Console.Write("~");
+                    }
+                }
+                else if (playerGrid[row, col] == -1)
+                {
+                    Console.Write("o");
+                }
+                else if (playerGrid[row, col] == -2)
+                {
+                    Console.Write("X");
+                }
+                else
+                {
+                    Console.Write(playerGrid[row, col]);
+                }
+            }
+
+            Console.Write("|   |");
+
+            for (int col = 0; col < 10; col++)
+            {
+                if (computerGrid[row, col] == 0)
+                {
+                    if (random.Next(5) > 0)
+                    {
+                        Console.Write(" ");
+                    }
+                    else
+                    {
+                        Console.Write("~");
+                    }
+                }
+                else if (computerGrid[row, col] == -1)
+                {
+                    Console.Write("o");
+                }
+                else if (computerGrid[row, col] == -2)
+                {
+                    Console.Write("X");
+                }
+                else
+                {
+                    Console.Write(" ");
+                }
+            }
+
+            Console.WriteLine("|");
+        }
+
+        Console.WriteLine(" #==========#   #==========#");
+        Console.WriteLine("  ABCDEFGHIJ     ABCDEFGHIJ");
+        Console.Write("Enter target coordinate: ");
+
+        String pos = Console.ReadLine();
+
+        if (pos.Length == 2)
+        {
+            if ('A' <= pos[0] && pos[0] <= 'J')
+            {
+                if ('0' <= pos[1] && pos[1] <= '9')
+                {
+                    if (computerGrid[pos[0] - 'A', pos[1] - '0'] == 0)
+                    {
+                        Console.WriteLine("Missed");
+                        computerGrid[pos[0] - 'A', pos[1] - '0'] = -1;
+                    }
+                    else if (computerGrid[pos[0] - 'A', pos[1] - '0'] == 1)
+                    {
+                        Console.WriteLine("Hit");
+
+                        int id = computerGrid[pos[0] - 'A', pos[1] - '0'];
+
+                        computerGrid[pos[0] - 'A', pos[1] - '0'] = -2;
+
+                        bool sunk = true;
+
+                        for (int row = 0; row < 10; row++)
+                        {
+                            for (int col = 0; col < 10; col++)
+                            {
+                                if (computerGrid[row, col] == id)
+                                {
+                                    sunk = false;
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (sunk)
+                        {
+                            Console.WriteLine("You sunk my battleship");
+                        }
+                    }
+
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Y");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid X");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Invalid format");
+        }
+    }
+
+    bool winner = true;
+
+    for (int row = 0; row < 10; row++)
+    {
+        for (int col = 0; col < 10; col++)
+        {
+            if (computerGrid[row, col] > 0)
+            {
+                winner = false;
+
+                break;
+            }
+        }
+    }
+
+    if (winner)
+    {
+        Console.WriteLine("You win");
+
+        break;
+    }
+
+    for (;;)
+    {
+        int x = random.Next(10);
+        int y = random.Next(10);
+
+        if (playerGrid[x, y] >= 0)
+        {
+            Console.WriteLine("Computer is targeting coordinate " + (char)('A' + x) + y);
+
+            if (playerGrid[x, y] == 0)
+            {
+                Console.WriteLine("Missed");
+                playerGrid[x, y] = -1;
+            }
+            else
+            {
+                Console.WriteLine("Hit");
+
+                int id = playerGrid[x, y];
+
+                playerGrid[x, y] = -2;
+
+                bool sunk = true;
+
+                for (int row = 0; row < 10; row++)
+                {
+                    for (int col = 0; col < 10; col++)
+                    {
+                        if (playerGrid[row, col] == id)
+                        {
+                            sunk = false;
+
+                            break;
+                        }
+                    }
+                }
+
+                if (sunk)
+                {
+                    Console.WriteLine("I sunk your battleship");
+                }
+            }
+
+            break;
+        }
+    }
+
+    bool loser = true;
+
+    for (int row = 0; row < 10; row++)
+    {
+        for (int col = 0; col < 10; col++)
+        {
+            if (playerGrid[row, col] > 0)
+            {
+                loser = false;
+
+                break;
+            }
+        }
+    }
+
+    if (loser)
+    {
+        Console.WriteLine("You loose!");
+
+        break;
+    }
+}
