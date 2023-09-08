@@ -1,6 +1,8 @@
 # Battleship (C#)
 
-This code requires *.NET 6* or above. However, I believe that all methods used are available in virtually all different versions of .NET, starting with *.NET Framework 1.1* (back in the good old days). Check out this [Microsoft guide](https://aka.ms/new-console-template) if you want to run the code using an older version of .NET.
+This code requires *.NET 6* or above. Check out this [Microsoft guide](https://aka.ms/new-console-template) if you want to run the code using an older version of .NET.
+
+The unit testing framework used in this example is *xUnit.net* (for more information, visit https://xunit.net/). The tests are pretty basic, so any testing framework should work.
 
 ## Usage
 
@@ -14,12 +16,16 @@ Ships are placed by entering `COLUMN` `ROW` `ORIENTATION`, where *COLUMN* is a v
 
 The enemy's ships are targeted in the same way, i.e. by entering `COLUMN` `ROW`.
 
+## Tests
+
+The tests can be invoked by running
+
+```dotnet test```
+
 ## Important
 
-The code contains quite a few deliberate bugs. There is no need to submit any pull requests to fix the “bugs”, they are there for a reason. The same goes for the code itself. It’s not pretty, but it’s not supposed to be.
+If you want to share your thoughts on the code, feel free to leave a comment in the video.
 
-If you want to share the bugs you find or your thoughts on the code, feel free to leave a comment in the video.
-
-https://youtu.be/uZ6_OoWjfYk
+https://youtu.be/K60O6DQBjoY
 
 [^1]: Actually it won't, due to a bug in the code.
