@@ -2,7 +2,11 @@
 int[] shipIds = new int[] { 1, 2, 3, 4, 5 };
 int[,] playerGrid = new int[10, 10];
 int[,] computerGrid = new int[10, 10];
-Random random = new Random();
+Random randomWater = new Random();
+Rand random = new RandomRand();
+
+if (args.Length == 1 && args[0] == "test")
+    random = new TestRand();
 
 for (int i = 0; i < 5; i++)
 {
@@ -48,7 +52,7 @@ for (int i = 0; i < 5; i++)
             {
                 if (playerGrid[row, col] == 0)
                 {
-                    if (random.Next(5) > 0)
+                    if (randomWater.Next(5) > 0)
                     {
                         Console.Write(" ");
                     }
@@ -141,7 +145,7 @@ for (;;)
             {
                 if (playerGrid[row, col] == 0)
                 {
-                    if (random.Next(5) > 0)
+                    if (randomWater.Next(5) > 0)
                     {
                         Console.Write(" ");
                     }
@@ -170,7 +174,7 @@ for (;;)
             {
                 if (computerGrid[row, col] == 0)
                 {
-                    if (random.Next(5) > 0)
+                    if (randomWater.Next(5) > 0)
                     {
                         Console.Write(" ");
                     }
@@ -349,5 +353,33 @@ for (;;)
         Console.WriteLine("You loose!");
 
         break;
+    }
+}
+
+interface Rand
+{
+    int Next(int maxValue);
+}
+
+class RandomRand : Rand
+{
+    private Random random = new Random();
+
+    public int Next(int maxValue)
+    {
+        return random.Next(maxValue);
+    }
+}
+
+class TestRand : Rand
+{
+    public int Next(int maxValue)
+    {
+        int value = int.Parse(Console.ReadLine());
+
+        if (value >= maxValue)
+            throw new ArgumentOutOfRangeException();
+
+        return value;
     }
 }

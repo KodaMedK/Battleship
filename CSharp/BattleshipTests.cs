@@ -11,8 +11,6 @@ public class BattleshipTests : IDisposable
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.RedirectStandardInput = true;
         process.StartInfo.RedirectStandardOutput = true;
-
-        process.Start();
     }
 
     public void Dispose()
@@ -34,6 +32,12 @@ public class BattleshipTests : IDisposable
         {
             return process.StandardOutput;
         }
+    }
+
+    private void Start(string arguments = "")
+    {
+        process.StartInfo.Arguments = arguments;
+        process.Start();
     }
 
     private string Read(int length)
@@ -83,26 +87,26 @@ public class BattleshipTests : IDisposable
 
     private void ExpectPlayerGrid(params string[] gridRows)
     {
-        Assert.Equal(" #==========#", Output.ReadLine());
+        ExpectLine(" #==========#");
 
         int rowNum = 0;
 
         foreach (var row in gridRows)
             Assert.Equal("" + rowNum++ + "|" + row + "|", Output.ReadLine().Replace("~", " "));
 
-        Assert.Equal(" #==========#", Output.ReadLine());
-        Assert.Equal("  ABCDEFGHIJ", Output.ReadLine());
+        ExpectLine(" #==========#");
+        ExpectLine("  ABCDEFGHIJ");
     }
 
     private void ExpectGrids(params string[] gridRows)
     {
-        Assert.Equal(" #==========#   #==========#", Output.ReadLine());
+        ExpectLine(" #==========#   #==========#");
 
         for (int i = 0; i < gridRows.Length / 2; i++)
             Assert.Equal("" + i + "|" + gridRows[2*i] + "|   |" + gridRows[2*i + 1] + "|", Output.ReadLine().Replace("~", " "));
 
-        Assert.Equal(" #==========#   #==========#", Output.ReadLine());
-        Assert.Equal("  ABCDEFGHIJ     ABCDEFGHIJ", Output.ReadLine());
+        ExpectLine(" #==========#   #==========#");
+        ExpectLine("  ABCDEFGHIJ     ABCDEFGHIJ");
     }
 
     private void ExpectErrorMessage(string prompt, string expected, string input)
@@ -110,7 +114,7 @@ public class BattleshipTests : IDisposable
         IgnoreGrids();
         ExpectPrompt(prompt);
         Enter(input);
-        Assert.Equal(expected, Output.ReadLine());
+        ExpectLine(expected);
     }
 
     private void ExpectPlaceErrorMessage(string expected, string input)
@@ -142,9 +146,63 @@ public class BattleshipTests : IDisposable
         Enter("E0V");
     }
 
+    private void SetupGrids()
+    {
+        ComputerPlacesShipAt("B1V");
+        ComputerPlacesShipAt("C1V");
+        ComputerPlacesShipAt("D1V");
+        ComputerPlacesShipAt("E1V");
+        ComputerPlacesShipAt("F1V");
+
+        SetupPlayerGrid();
+    }
+
+    private void ComputerPlacesShipAt(string position)
+    {
+        EnterCoordinate(position);
+        Enter(position[2] == 'H' ? "0" : "1");
+    }
+
+    private void TargetCoordinate(string coordinate, string expected = null)
+    {
+        ExpectPrompt("Enter target coordinate: ");
+        Enter(coordinate);
+        ExpectLine(expected);
+    }
+
+    private void ComputerTargesCoordinate(string coordinate, string expected = null)
+    {
+        EnterCoordinate(coordinate);
+        ExpectLine("Computer is targeting coordinate " + coordinate);
+        ExpectLine(expected);
+    }
+
+    private void ExpectLine(string expected)
+    {
+        string actual = Output.ReadLine();
+
+        if (expected != null)
+            Assert.Equal(expected, actual);
+    }
+
+    private void EnterCoordinate(string coordinate)
+    {
+        Enter(Convert.ToString(coordinate[0] - 'A'));
+        Enter(Convert.ToString(coordinate[1]));
+    }
+
+    private void PlayOneTurn(string playerTarget, string computerTarget)
+    {
+        TargetCoordinate(playerTarget);
+        ComputerTargesCoordinate(computerTarget);
+        IgnoreGrids();
+    }
+
     [Fact]
     void PlaceShipPromptIsShown()
     {
+        Start();
+
         ExpectPlayerGrid();
         ExpectPrompt("Place ship with length 5: ");
     }
@@ -152,6 +210,8 @@ public class BattleshipTests : IDisposable
     [Fact]
     void InvalidInputGivesErrorMessage()
     {
+        Start();
+
         ExpectPlaceErrorMessage("Invalid format", "hello");
         ExpectPlaceErrorMessage("Invalid X", "123");
         ExpectPlaceErrorMessage("Invalid Y", "AAA");
@@ -162,6 +222,8 @@ public class BattleshipTests : IDisposable
     [Fact]
     void ShipsArePlacedOnPlayerGrid()
     {
+        Start();
+
         ExpectPlayerGrid();
         ExpectPrompt("Place ship with length 5: ");
         Enter("A0H");
@@ -237,6 +299,8 @@ public class BattleshipTests : IDisposable
     [Fact]
     void InvalidTargetCoordinateGivesErrorMessage()
     {
+        Start();
+
         SetupPlayerGrid();
 
         ExpectTargetErrorMessage("Invalid format", "hel");
@@ -245,15 +309,14 @@ public class BattleshipTests : IDisposable
     }
 
     [Fact]
-    void missedTargetIsMarkedOnGrid()
+    void MissedTargetIsMarkedOnGrid()
     {
-        SetupPlayerGrid();
+        Start("test");
+
+        SetupGrids();
         IgnoreGrids();
-        ExpectPrompt("Enter target coordinate: ");
-        Enter("A0");
-        Assert.Equal("Missed", Output.ReadLine());
-        Output.ReadLine();
-        Output.ReadLine();
+        TargetCoordinate("A0", "Missed");
+        ComputerTargesCoordinate("J9", "Missed");
         ExpectGrids(
             "11111     ", "o         ",
             "2222      ", "          ",
@@ -264,6 +327,138 @@ public class BattleshipTests : IDisposable
             "          ", "          ",
             "          ", "          ",
             "          ", "          ",
+            "         o", "          ");
+    }
+
+    [Fact]
+    void HitTargetIsMarkedOnGrid()
+    {
+        Start("test");
+
+        SetupGrids();
+        IgnoreGrids();
+        TargetCoordinate("B1", "Hit");
+        ComputerTargesCoordinate("A0", "Hit");
+        ExpectGrids(
+            "X1111     ", "          ",
+            "2222      ", " X        ",
+            "333       ", "          ",
+            "44        ", "          ",
+            "55        ", "          ",
+            "          ", "          ",
+            "          ", "          ",
+            "          ", "          ",
+            "          ", "          ",
             "          ", "          ");
+    }
+
+    [Fact]
+    void BattleshipIsSunk()
+    {
+        Start("test");
+
+        SetupGrids();
+        IgnoreGrids();
+        PlayOneTurn("B1", "A0");
+        PlayOneTurn("B2", "A1");
+        PlayOneTurn("B3", "A2");
+        PlayOneTurn("B4", "A3");
+        TargetCoordinate("B5", "Hit");
+        ExpectLine("You sunk my battleship");
+        ComputerTargesCoordinate("A4", "Hit");
+        ExpectLine("I sunk your battleship");
+    }
+
+    [Fact]
+    void ComputerWinsGame()
+    {
+        Start("test");
+
+        SetupGrids();
+        IgnoreGrids();
+        PlayOneTurn("G0", "A0");
+        PlayOneTurn("G1", "A1");
+        PlayOneTurn("G2", "A2");
+        PlayOneTurn("G3", "A3");
+        TargetCoordinate("G4");
+        ComputerTargesCoordinate("A4", "Hit");
+        ExpectLine("I sunk your battleship");
+
+        IgnoreGrids();
+        PlayOneTurn("G5", "B0");
+        PlayOneTurn("G6", "B1");
+        PlayOneTurn("G7", "B2");
+        TargetCoordinate("G8");
+        ComputerTargesCoordinate("B3", "Hit");
+        ExpectLine("I sunk your battleship");
+
+        IgnoreGrids();
+        PlayOneTurn("G9", "C0");
+        PlayOneTurn("H0", "C1");
+        TargetCoordinate("H1");
+        ComputerTargesCoordinate("C2", "Hit");
+        ExpectLine("I sunk your battleship");
+
+        IgnoreGrids();
+        PlayOneTurn("H2", "D0");
+        TargetCoordinate("H3");
+        ComputerTargesCoordinate("D1", "Hit");
+        ExpectLine("I sunk your battleship");
+
+        IgnoreGrids();
+        PlayOneTurn("H4", "E0");
+        TargetCoordinate("H5");
+        ComputerTargesCoordinate("E1", "Hit");
+        ExpectLine("I sunk your battleship");
+        ExpectLine("You loose!");
+
+        process.WaitForExit(1000);
+        Assert.True(process.HasExited);
+    }
+
+    [Fact]
+    void PlayerWinsGame()
+    {
+        Start("test");
+
+        SetupGrids();
+        IgnoreGrids();
+        PlayOneTurn("B1", "F0");
+        PlayOneTurn("B2", "F1");
+        PlayOneTurn("B3", "F2");
+        PlayOneTurn("B4", "F3");
+        TargetCoordinate("B5");
+        ExpectLine("You sunk my battleship");
+        ComputerTargesCoordinate("F4");
+
+        IgnoreGrids();
+        PlayOneTurn("C1", "G0");
+        PlayOneTurn("C2", "G1");
+        PlayOneTurn("C3", "G2");
+        TargetCoordinate("C4");
+        ExpectLine("You sunk my battleship");
+        ComputerTargesCoordinate("G3");
+
+        IgnoreGrids();
+        PlayOneTurn("D1", "H0");
+        PlayOneTurn("D2", "H1");
+        TargetCoordinate("D3");
+        ExpectLine("You sunk my battleship");
+        ComputerTargesCoordinate("H2");
+
+        IgnoreGrids();
+        PlayOneTurn("E1", "I0");
+        TargetCoordinate("E2");
+        ExpectLine("You sunk my battleship");
+        ComputerTargesCoordinate("I1");
+
+        IgnoreGrids();
+        PlayOneTurn("F1", "J0");
+        TargetCoordinate("F2");
+        ExpectLine("You sunk my battleship");
+        ExpectLine("You win");
+
+        process.WaitForExit(1000);
+        Assert.True(process.HasExited);
     }
 }

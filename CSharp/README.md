@@ -24,8 +24,14 @@ The tests can be invoked by running
 
 ## Important
 
-If you want to share your thoughts on the code, feel free to leave a comment in the video.
+This code is featured in a couple of videos about test automation (see links below). If you want to share your thoughts on the code, feel free to leave a comment in the videos.
+
+### Part I
 
 https://youtu.be/K60O6DQBjoY
+
+### Part II
+
+https://youtu.be/b_l7BQ9R5Wk
 
 [^1]: Actually it won't, due to a bug in the code.
